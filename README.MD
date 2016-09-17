@@ -1,0 +1,1 @@
+Metody Optymalizacji 
