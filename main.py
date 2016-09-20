@@ -3,17 +3,29 @@ from time import perf_counter
 from optimization.optimization_method import SimulatedAnnealing, NormalizedFitnessHandler, DefaultFitnessHandler, \
     PenalizedRegionOperator, TabooRegionOperator
 from pmath.functions.base_function import Variables
-from pmath.functions.elementary_functions import Polynomial, Exp
+from pmath.functions.elementary_functions import Polynomial, Exp, Sin, Cos
 from pmath.rndgen.util import InverseCDFGenerator
 from pmath.util.hcuberegion import HCubeRegion
 from pmath.util.integrator import CallableIntegrator
 from pmath.util.mcintegrator import DivideAndConquerMC
+from gui.test import test
+
+if __name__ == "__main__":
+    test()
+    # var = Variables()
+    # x, y = var.get(2,["x", "y"])
+    # fsin = Sin()
+    # fpol = Polynomial([1,2,1])
+    # print(fsin+fpol)
+    # f = (Sin() @ x) * (Cos() @ y)
+    # print(f([2,3]))
+
 
 
 def swag():
     pass
 
-
+'''
 if __name__ == "__main__":
     fh = NormalizedFitnessHandler()
     fh.set_fitness_function(Polynomial([0, 1]))
@@ -61,3 +73,4 @@ if __name__ == "__main__":
     # later = perf_counter()
 
     # print(later - now)
+'''

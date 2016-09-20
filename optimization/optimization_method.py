@@ -321,7 +321,7 @@ class OptimizationMethod:
             if save is not None:
                 if self.iteration % save == 0:
                     saved.append(deepcopy(agents))
-                    return saved
+                    #return saved
 
             if perf_counter() - start_time > self.time_limit:
                 saved.append(deepcopy(agents))
