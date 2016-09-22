@@ -150,3 +150,6 @@ class Erf(ElementaryFunction):
     def _derivative(self, variable):
         return Polynomial([1/(2*pi)])*(Exp() @ Polynomial([0,0,-0.5]))
 
+class Abs(ElementaryFunction):
+    def __init__(self):
+        super().__init__(abs)
