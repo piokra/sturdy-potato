@@ -5,6 +5,7 @@ import pyqtgraph as pg
 import numpy as np
 from pmath.functions.test_functions import parabolaxy, parabolaxy_region, MathFunction
 from optimization.optimization_method import SimulatedAnnealing
+from optimization.pso import ParticleSwarmOptimization
 
 ## Always start by initializing Qt (only once per application)
 from pmath.util.hcuberegion import HCubeRegion
@@ -26,7 +27,7 @@ class SuperOkienkoAsi:
         left_graph = pg.PlotWidget()
         self.case_list = QtGui.QComboBox()
         back = QtGui.QPushButton('<|')
-        play = QtGui.QPushButton('>')
+        play_button = QtGui.QPushButton('>')
         forward = QtGui.QPushButton('|>')
 
         text_box = QtGui.QTextEdit()
@@ -60,7 +61,7 @@ class SuperOkienkoAsi:
         left_layout.addWidget(left_graph, 0, 0, 3, 3)
         left_layout.addWidget(self.case_list, 4, 1)
         left_layout.addWidget(back, 5, 0)
-        left_layout.addWidget(play, 5, 1)
+        left_layout.addWidget(play_button, 5, 1)
         left_layout.addWidget(forward, 5, 2)
 
         right_layout.addWidget(text_box, 0, 0, 3, 3)
@@ -82,8 +83,9 @@ class SuperOkienkoAsi:
         timer = QtCore.QTimer()
         timer.timeout.connect(self.update_iter_forward)
 
-        play.clicked.connect(lambda timer: self.play(timer))
+        print(timer)
 
+        play_button.clicked.connect(lambda: self.play(timer))
 
         execute.clicked.connect(lambda: self.execute(text_box))
         ## Display the widget as a new window
@@ -96,12 +98,13 @@ class SuperOkienkoAsi:
 
     def update_iter_back(self):
         self.iter = max(0, self.iter - 1)
-        #self.draw_active_case()
-        self.remove_last_iter()
+        self.draw_active_case()
 
     def update_iter_forward(self):
         if self.active_case is not None:
             self.iter = min(self.iter + 1, len(self.active_case[1]) - 1)
+            if self.iter == len(self.active_case[1]) - 1:
+                self.autoplay = False
             self.draw_active_case()
 
     def execute(self, edit_field: QtGui.QTextEdit):
@@ -120,36 +123,28 @@ class SuperOkienkoAsi:
         self.active_case = None
         if case >= 0:
             self.active_case = self.cases[case]
-            self.draw_active_case()
             self.iter = -1
+            self.draw_active_case()
             print(self.active_case[0], self.iter)
 
+    def draw_case(self, iter: int):
+        if iter < 0:
+            return
+        i = 0
+        #pen = pg.mkPen(width=1, color=pg.intColor(i, hues=100,minValue=10)))
+        for punkt in self.active_case[1][iter]:
+            self.left_graph.addItem(
+                pg.PlotDataItem([punkt[0]], [punkt[1]], lines=None, symbol="x", symbolPen=pg.mkPen(width=1,
+                                                                                                   color=pg.intColor(i))))
+            i += 1
+        return
+
     def draw_active_case(self):
-        if self.active_case is None:
-            return
-        if self.iter < 0:
-            return
-        tempx = []
-        tempy = []
-        for punkt in self.active_case[1][self.iter]:
-            tempx.append(punkt[0])
-            tempy.append(punkt[1])
-        self.left_graph.addItem(pg.PlotDataItem(tempx, tempy, lines=None, symbol="x", symbolPen=pg.mkPen(width=2, color=pg.intColor(self.iter, hues=25, minValue=10))))
-        print(item for item in self.left_graph.getPlotItem().items)
-        #self.left_graph.plot(tempx, tempy, lines=None, symbol="x", symbolPen=pg.mkPen(width=2, color=pg.intColor(self.iter, hues=25, minValue=10, values=10)))
-
-    def remove_last_iter(self):
-        if self.active_case is None:
-            return
-        if self.iter < 1:
-            return
-        tempx = []
-        tempy = []
-        for punkt in self.active_case[1][self.iter - 1]:
-            tempx.append(punkt[0])
-            tempy.append(punkt[1])
-        self.left_graph.removeItem(pg.PlotDataItem(tempx, tempy))
-
+        self.left_graph.getPlotItem().clear()
+        self.left_graph.addItem(self.img)
+        self.draw_case(self.iter - 1)
+        self.draw_case(self.iter)
+        # self.left_graph.
 
     def set_function_and_region(self, func: MathFunction, region: HCubeRegion = None, step=0.01):
         if func.input_dim() != 2:
@@ -187,8 +182,9 @@ class SuperOkienkoAsi:
     def play(self, timer: QtCore.QTimer):
         self.autoplay = not self.autoplay
         print(self.autoplay)
+        print(timer)
         if self.autoplay:
-            timer.start(50)
+            timer.start(1000)
         else:
             timer.stop()
 

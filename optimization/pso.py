@@ -42,8 +42,6 @@ class ParticleSwarmOptimization(OptimizationMethod):
         # print(global_best)
         for i, agent in enumerate(self.agents):
             l_best = self.get_local_best((self.handler.get_fintess(agent), agent), i)
-            if not i:
-                print(l_best)
 
             vel = self.velocity(i)
             inp_scl_mul(self.omega, vel)
