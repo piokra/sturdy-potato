@@ -127,22 +127,26 @@ class SuperOkienkoAsi:
             self.draw_active_case()
             print(self.active_case[0], self.iter)
 
-    def draw_case(self, iter: int):
+    def draw_case(self, iter: int, prev = False):
         if iter < 0:
             return
         i = 0
         #pen = pg.mkPen(width=1, color=pg.intColor(i, hues=100,minValue=10)))
         for punkt in self.active_case[1][iter]:
+            col = QtGui.QColor(QtGui.QColor.colorNames()[(13 * i) % 148])
+            print(col.name())
+            if prev is True:
+                col.setAlpha(60)
             self.left_graph.addItem(
                 pg.PlotDataItem([punkt[0]], [punkt[1]], lines=None, symbol="x", symbolPen=pg.mkPen(width=1,
-                                                                                                   color=pg.intColor(i))))
+                                                                                                   color=col)))
             i += 1
         return
 
     def draw_active_case(self):
         self.left_graph.getPlotItem().clear()
         self.left_graph.addItem(self.img)
-        self.draw_case(self.iter - 1)
+        self.draw_case(self.iter - 1, prev=True)
         self.draw_case(self.iter)
         # self.left_graph.
 
