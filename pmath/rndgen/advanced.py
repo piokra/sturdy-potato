@@ -48,6 +48,7 @@ class NormalDistribution01(Generator):
         self.second = None
         return ret
 
+
 class CauchyDistribution(Generator):
     def __init__(self, x0: float = 0, gamma: float = 1, u_gen: Generator = None):
         self.x0 = x0
@@ -64,6 +65,7 @@ class CauchyDistribution(Generator):
         x = self.UGen.get()  # X ~ U(0,1)
         c = tan(pi * (x - 0.5))  # C ~ Cauchy(0,1)
         return self.gamma * c + self.x0  # C * \gamma + x0 ~ Cauchy(0*gamma + x0, 1*|gamma|) ~ Cauchy(x0, |gamma|)
+
 
 class LevyDistribution(Generator):
     def __init__(self, mu=0, c=1, n_gen=None):

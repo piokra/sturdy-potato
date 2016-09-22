@@ -11,24 +11,15 @@ from pmath.util.hcuberegion import HCubeRegion
 from pmath.util.integrator import CallableIntegrator
 from pmath.util.mcintegrator import DivideAndConquerMC
 from gui.test import test
+from pmath.util.vector_util import random_dir
 
 if __name__ == "__main__":
     test()
-    # var = Variables()
-    # x, y = var.get(2,["x", "y"])
-    # fsin = Sin()
-    # fpol = Polynomial([1,2,1])
-    # print(fsin+fpol)
-    # f = (Sin() @ x) * (Cos() @ y)
-    # print(f([2,3]))
-    # pso = ParticleSwarmOptimization(region=parabolaxy_region)
-    # pso.set_fitness_function(parabolaxy)
-    # pso.set_time_limit(1)
-    # pso.set_iteration_limit(0)
-    # pso.init_population(gen_count=100)
-    # agents = pso.start()
-    # print(agents)
 
+    print(random_dir(3))
+    x, y = Variables().get(2, ["x", "y"])
+    f=(Exp() @ Exp() @ x + Exp() @ y)
+    print(f([1, 1]))
 
 def swag():
     pass
