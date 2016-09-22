@@ -3,7 +3,8 @@ from typing import List
 from PyQt4 import QtGui, QtCore
 import pyqtgraph as pg
 import numpy as np
-from pmath.functions.test_functions import parabolaxy, parabolaxy_region, MathFunction
+from pmath.functions.test_functions import *
+#parabolaxy, parabolaxy_region, MathFunction
 from optimization.optimization_method import SimulatedAnnealing
 from optimization.pso import ParticleSwarmOptimization
 
@@ -63,6 +64,18 @@ class SuperOkienkoAsi:
         left_layout.addWidget(back, 5, 0)
         left_layout.addWidget(play_button, 5, 1)
         left_layout.addWidget(forward, 5, 2)
+
+
+        self.gradient = pg.GradientWidget()
+        step = 0.1
+        x = 0
+        while x <= 1.0:
+            self.gradient.addTick(x, pg.mkColor(255*x,255*(1-x), 0))
+            self.gradient.addTick(x+step/20, pg.mkColor(0,0,0))
+            #self.gradient.addTick(x+step/5, pg.mkColor(0,0,0))
+            self.gradient.addTick(x+step/10, pg.mkColor(255*x,255*(1-x), 0))
+            x += step
+
 
         right_layout.addWidget(text_box, 0, 0, 3, 3)
         right_layout.addWidget(load, 4, 0)
@@ -174,7 +187,14 @@ class SuperOkienkoAsi:
         np_array = np.array(all_points)
         print(np_array)
         img = pg.ImageItem()
+
+
+
+
+        img.setLookupTable(self.gradient.getLookupTable(100))
         img.setImage(np_array)
+
+        #img.setLevels([[0, 4], [0, 255], [0, 255]])
 
         image_region = QtCore.QRectF(xmin, ymin, (xmax - xmin), (ymax - ymin))
         img.setRect(image_region)

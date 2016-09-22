@@ -17,7 +17,7 @@ if __name__ == "__main__":
 
     print(camel([1, 0]))
 
-    #test()
+    test()
     # var = Variables()
     # x, y = var.get(2,["x", "y"])
     # fsin = Sin()
