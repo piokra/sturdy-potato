@@ -214,6 +214,9 @@ class FunctionPower(HOBinaryFunction):
     def __str__(self):
         return "(" + str(self.f) + ") ** (" + str(self.g) + ")"
 
+    def __call__(self, arguments: List[float]) -> float:
+        return self.f(arguments)**self.g(arguments)
+
 
 class FunctionComposiiton(MathFunction):
     """ (f o g) """
