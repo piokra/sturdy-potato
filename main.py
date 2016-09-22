@@ -2,8 +2,10 @@ from time import perf_counter
 
 from optimization.optimization_method import SimulatedAnnealing, NormalizedFitnessHandler, DefaultFitnessHandler, \
     PenalizedRegionOperator, TabooRegionOperator
+from optimization.pso import ParticleSwarmOptimization
 from pmath.functions.base_function import Variables
 from pmath.functions.elementary_functions import Polynomial, Exp, Sin, Cos
+from pmath.functions.test_functions import parabolaxy_region, parabolaxy
 from pmath.rndgen.util import InverseCDFGenerator
 from pmath.util.hcuberegion import HCubeRegion
 from pmath.util.integrator import CallableIntegrator
@@ -11,7 +13,7 @@ from pmath.util.mcintegrator import DivideAndConquerMC
 from gui.test import test
 
 if __name__ == "__main__":
-    test()
+    #test()
     # var = Variables()
     # x, y = var.get(2,["x", "y"])
     # fsin = Sin()
@@ -19,7 +21,13 @@ if __name__ == "__main__":
     # print(fsin+fpol)
     # f = (Sin() @ x) * (Cos() @ y)
     # print(f([2,3]))
-
+    pso = ParticleSwarmOptimization(region=parabolaxy_region)
+    pso.set_fitness_function(parabolaxy)
+    pso.set_time_limit(1)
+    pso.set_iteration_limit(0)
+    pso.init_population(gen_count=100)
+    agents = pso.start()
+    print(agents)
 
 
 def swag():

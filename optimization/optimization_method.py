@@ -1,5 +1,5 @@
 from copy import deepcopy
-from math import exp
+from math import exp, sqrt
 from multiprocessing import Pool, cpu_count
 from time import perf_counter
 from typing import List
@@ -25,6 +25,7 @@ class FitnessHandler:
         self.best_value = 0.0
         self.highest_change = 0.0
         self.total_change = 0.0
+        self.best_agent = None
 
     def refresh(self):
         epsilon = 0.001
@@ -39,7 +40,7 @@ class FitnessHandler:
         for agent in self.population:
             fitness = self.fitness_method(agent)
             try:
-                prev_fitness = self.cache[id(agent)][0]
+                prev_fitness = self.cache[id(agent)]
                 prev_fitness -= fitness
                 if max_change < abs(prev_fitness):
                     max_change = abs(prev_fitness)
@@ -85,6 +86,9 @@ class FitnessHandler:
         :return:
         """
         return self.avg_value
+
+    def get_best_agent(self):
+        return self.best_agent
 
     def get_best_value(self):
         """
@@ -145,14 +149,14 @@ class NormalizedFitnessHandler(FitnessHandler):
 
 
 class OptimizationMethod:
-    def __init__(self, region: Region = None):
+    def __init__(self, region: Region = None, generator: Generator = None):
         self.region = region  # todo generalize this to abstract sets (eg graph sets)
         self.iteration_limit = -1
         self.time_limit = float('+inf')
         self.low_value_limit = float('-inf')
         self.high_value_limit = float('+inf')
         self.limit_set = False
-
+        self.generator = generator
         self.pre_iteration_operators = []
         self.post_iteration_operators = []
 
@@ -166,8 +170,8 @@ class OptimizationMethod:
 
         self.started = False
         self.finished = False
-        self.allow_async_execution = False #True
-        self.pool = None #Pool(cpu_count())
+        self.allow_async_execution = False  # True
+        self.pool = None  # Pool(cpu_count())
 
         self.iteration = 0
         self.handler = NormalizedFitnessHandler()  # type: FitnessHandler
@@ -267,9 +271,20 @@ class OptimizationMethod:
                 operator(agent)
         return self.agents
 
-    def init_population(self, agents=None):
+    def init_population(self, agents=None, gen_count=1):
         if agents is not None:
             self.agents = agents
+            return
+
+        if self.region is None:
+            self.region = HCubeRegion([0] * self.fitness_function.input_dim(), [1] * self.fitness_function.input_dim())
+
+        if self.generator is None:
+            generators = list(StdRealUniformGenerator() for i in range(self.fitness_function.input_dim()))
+            self.generator = NDimGenerator(generators)
+
+        self.agents = [self.region.get_random_point() for i in range(gen_count)]
+
 
     def method(self, agent):
         raise NotImplementedError("This has to be overloaded to do method specific operations")
@@ -321,7 +336,7 @@ class OptimizationMethod:
             if save is not None:
                 if self.iteration % save == 0:
                     saved.append(deepcopy(agents))
-                    #return saved
+                    # return saved
 
             if perf_counter() - start_time > self.time_limit:
                 saved.append(deepcopy(agents))
@@ -367,7 +382,8 @@ class OptimizationMethod:
     def add_agent(self, agent=None):
         if agent is None:
             if self.region is None:
-                self.region = HCubeRegion([0] * self.fitness_function.input_dim(), [1] * self.fitness_function.input_dim())
+                self.region = HCubeRegion([0] * self.fitness_function.input_dim(),
+                                          [1] * self.fitness_function.input_dim())
         agent = self.region.get_random_point()
 
         self.new_agents.append(agent)
@@ -379,14 +395,14 @@ class SimulatedAnnealing(OptimizationMethod):
     def __init__(self, k=0.08, T0: float = 100., step: float = 0.1, schedule: MathFunction = None,
                  region: Region = None,
                  generator: Generator = None):
-        super().__init__(region=region)
+        super().__init__(region=region, generator=generator)
         if schedule is None:
             schedule = Polynomial([1]) / Polynomial([1, 0.005]) + Polynomial([SimulatedAnnealing.epsilon])
 
         self.schedule = schedule
 
         # self.region = region
-        self.generator = generator
+
         self.schedule = schedule
         self.k = k
         self.T0 = T0
@@ -398,7 +414,7 @@ class SimulatedAnnealing(OptimizationMethod):
 
     def method(self, agent):
         mul = self.schedule([self.succ])
-        step = self.step * mul
+        step = self.step * sqrt(mul)
         temp = self.T0 * mul
         # print(mul, step, temp)
         change = self.generator.get()
@@ -419,17 +435,6 @@ class SimulatedAnnealing(OptimizationMethod):
                 agent[i] = candidate[i]
                 prev = agent
         self.succ += 1
-
-    def init_population(self, agents=None):
-        super().init_population(agents)
-
-        if self.region is not None:
-            self.agents = [self.region.get_random_point()]
-        elif self.generator is not None:
-            self.agents = [self.generator.get()]
-        print(self.region, self.generator)
-
-        return self
 
     def set_fitness_function(self, fitness_function):
         super().set_fitness_function(fitness_function)
