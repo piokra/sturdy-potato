@@ -48,36 +48,38 @@ class NormalDistribution01(Generator):
         self.second = None
         return ret
 
-    class CauchyDistribution(Generator):
-        def __init__(self, x0: float = 0, gamma: float = 1, u_gen: Generator = None):
-            self.x0 = x0
-            self.gamma = gamma
-            if self.gamma <= 0:
-                raise AttributeError('This generator accepts only positive gammas')
 
-            if u_gen is None:
-                u_gen = StdRealUniformGenerator()
+class CauchyDistribution(Generator):
+    def __init__(self, x0: float = 0, gamma: float = 1, u_gen: Generator = None):
+        self.x0 = x0
+        self.gamma = gamma
+        if self.gamma <= 0:
+            raise AttributeError('This generator accepts only positive gammas')
 
-            self.UGen = u_gen
+        if u_gen is None:
+            u_gen = StdRealUniformGenerator()
 
-        def get(self):
-            x = self.UGen.get()  # X ~ U(0,1)
-            c = tan(pi * (x - 0.5))  # C ~ Cauchy(0,1)
-            return self.gamma * c + self.x0  # C * \gamma + x0 ~ Cauchy(0*gamma + x0, 1*|gamma|) ~ Cauchy(x0, |gamma|)
+        self.UGen = u_gen
 
-    class LevyDistribution(Generator):
-        def __init__(self, mu=0, c=1, n_gen=None):
-            self.mu = mu
-            self.c = c
+    def get(self):
+        x = self.UGen.get()  # X ~ U(0,1)
+        c = tan(pi * (x - 0.5))  # C ~ Cauchy(0,1)
+        return self.gamma * c + self.x0  # C * \gamma + x0 ~ Cauchy(0*gamma + x0, 1*|gamma|) ~ Cauchy(x0, |gamma|)
 
-            if n_gen is None:
-                n_gen = NormalDistribution01()
 
-            self.n_gen = n_gen
+class LevyDistribution(Generator):
+    def __init__(self, mu=0, c=1, n_gen=None):
+        self.mu = mu
+        self.c = c
 
-        def get(self):
-            Y = self.n_gen.get()  # Generate a number from Noraml Dist(mu, sigma)
-            Y = (Y - self.n_gen.mean) ** -2  # We now have: (X - mu)**-2 ~ Levy(0,sigma**-2)
-            k = self.c * (self.n_gen.std ** 2)
-            b = self.mu
-            return k * Y + b  # We now have kY + b ~ Levy(0*k+b, 1/sigma2*b)
+        if n_gen is None:
+            n_gen = NormalDistribution01()
+
+        self.n_gen = n_gen
+
+    def get(self):
+        Y = self.n_gen.get()  # Generate a number from Noraml Dist(mu, sigma)
+        Y = (Y - self.n_gen.mean) ** -2  # We now have: (X - mu)**-2 ~ Levy(0,sigma**-2)
+        k = self.c * (self.n_gen.std ** 2)
+        b = self.mu
+        return k * Y + b  # We now have kY + b ~ Levy(0*k+b, 1/sigma2*b)
