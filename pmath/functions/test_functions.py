@@ -28,4 +28,8 @@ Polynomial([10, 10 - 1.25 / pi]) @ (Cos() @ _x))
 branin_region = HCubeRegion([-5, 0], [10, 15])
 
 camel = (Polynomial([0, 0, 4, 0, -2.1, 0, 1/3]) @ _x) + (Polynomial([0, 0, -4, 0, 4]) @ _y) + (_x  * _y)
+<<<<<<< HEAD
 camel_region = HCubeRegion([-5, -5], [5, 5])
+=======
+camel_region = HCubeRegion([-5, -5], [5, 5])
+>>>>>>> origin/piotr

@@ -5,6 +5,7 @@ class Region:
     """ This class describes a region in an abstract space """
 
     default_generators = [StdRealUniformGenerator()]
+    normal_generators = []
 
     def __init__(self):
         raise NotImplementedError('This is an abstract base class')

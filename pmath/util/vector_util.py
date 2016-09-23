@@ -1,4 +1,7 @@
+from math import sqrt
 from typing import List
+
+from pmath.rndgen.advanced import NormalDistribution01
 
 
 def inp_vec_add(l: List, r: List):
@@ -64,3 +67,37 @@ def replace(l: List, r: List):
     l.clear()
     for el in r:
         l.append(r)
+
+
+def lenght_squred(l: List):
+    ret = 0.0
+    for el in l:
+        ret += el * el
+    return ret
+
+
+def dist_squared(l: List, r: List):
+    ret = 0.0
+    for xi, yi in zip(l, r):
+        ret += (xi - yi) * (xi - yi)
+    return ret
+
+
+def length(l: List):
+    return sqrt(lenght_squred(l))
+
+
+def dist(l: List, r: List):
+    return sqrt(dist_squared(l, r))
+
+
+_normal_generators = []
+
+
+def random_dir(dim: int):
+    while dim > len(_normal_generators):
+        _normal_generators.append(NormalDistribution01())
+
+    point = list(_normal_generators[i].get() for i in range(dim))
+    inp_scl_mul(1 / length(point), point)
+    return point
