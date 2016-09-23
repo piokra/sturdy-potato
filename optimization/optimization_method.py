@@ -27,8 +27,7 @@ class FitnessHandler:
         self.total_change = 0.0
         self.best_agent = None
 
-    def refresh(self):
-        epsilon = 0.001
+
 
     def refresh(self):
         self.population.sort(key=self.fitness_function)
@@ -88,14 +87,14 @@ class FitnessHandler:
         return self.avg_value
 
     def get_best_agent(self):
-        return self.best_agent
+        return self.population[0]
 
     def get_best_value(self):
         """
         Returns the best value. (We assume lower is better)
         :return: Best value
         """
-        return self.best_value
+        return self.get_fintess(self.get_best_agent())
 
     def top_k_agents(self, k):
         """
@@ -180,6 +179,7 @@ class OptimizationMethod:
         self.stagnant_sum_turns = 0
         self.dead_agents = []
         self.new_agents = []
+        self.agents_to_replace = []
 
     def set_time_limit(self, seconds: float):
         """
@@ -250,6 +250,17 @@ class OptimizationMethod:
         self.handler.set_fitness_function(self.fitness_function)
         return self
 
+    def call_methods(self):
+        if self.allow_async_execution:
+            for i, agent in enumerate(self.agents):
+                if self.allow_async_execution:
+                    self.pool.apply(self.method, agent, i)
+
+            self.pool.join()
+        else:
+            for i, agent in enumerate(self.agents):
+                self.method(agent, i)
+
     def do_iteration(self):
         if not self.started:
             raise RuntimeError("This method must be started with self.start()")
@@ -257,18 +268,15 @@ class OptimizationMethod:
         for operator in self.pre_iteration_operators:
             for agent in self.agents:
                 operator(agent)
-        if self.allow_async_execution:
-            for agent in self.agents:
-                if self.allow_async_execution:
-                    self.pool.apply(self.method, agent)
 
-            self.pool.join()
-        else:
-            for agent in self.agents:
-                self.method(agent)
+        self.call_methods()
+
         for operator in self.post_iteration_operators:
             for agent in self.agents:
                 operator(agent)
+
+        if self.handler is not None:
+            self.handler.refresh()
         return self.agents
 
     def init_population(self, agents=None, gen_count=1):
@@ -284,9 +292,10 @@ class OptimizationMethod:
             self.generator = NDimGenerator(generators)
 
         self.agents = [self.region.get_random_point() for i in range(gen_count)]
+        if self.handler is not None:
+            self.handler.set_population(self.agents)
 
-
-    def method(self, agent):
+    def method(self, agent, i):
         raise NotImplementedError("This has to be overloaded to do method specific operations")
 
     def start(self, save=None):
@@ -350,6 +359,11 @@ class OptimizationMethod:
             for agent in self.new_agents:
                 self.agents.append(agent)
 
+            for old, new in self.agents_to_replace:
+                index = self.agents.index(old)
+                self.agents[index] = new
+
+            self.agents_to_replace.clear()
             self.dead_agents.clear()
             self.new_agents.clear()
 
@@ -388,6 +402,8 @@ class OptimizationMethod:
 
         self.new_agents.append(agent)
 
+    def replace_agent(self, to_replace, new_agent):
+        self.agents_to_replace.append((to_replace, new_agent))
 
 class SimulatedAnnealing(OptimizationMethod):
     epsilon = 10e-9
@@ -412,7 +428,7 @@ class SimulatedAnnealing(OptimizationMethod):
         self.accepter = StdRealUniformGenerator()
         self.prev = float('inf')
 
-    def method(self, agent):
+    def method(self, agent, i):
         mul = self.schedule([self.succ])
         step = self.step * sqrt(mul)
         temp = self.T0 * mul

@@ -10,7 +10,7 @@ class RandomWalk(OptimizationMethod):
         self.walk_generator = walk_generator
         self.scale =scale
 
-    def method(self, agent):
+    def method(self, agent, i):
         change = random_dir(len(agent))
         inp_scl_mul(self.scale*self.walk_generator.get(), change)
         inp_vec_add(agent, change)

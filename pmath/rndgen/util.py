@@ -45,8 +45,10 @@ class WeightedSelector:
         # print("rand:", rand)
         # print("sum:", sum)
         for el in weighted:
+            #print(el[0])
             if el[0] > rand:
                 return el[1]
+
 
     def population(self, l: List, k: int, key=None):
         ret = []
@@ -54,7 +56,7 @@ class WeightedSelector:
         for i in range(k):
             obj = self.choose(l, key)
             l.remove(obj)
-            ret.append(ret)
+            ret.append(obj)
         return ret
 
 

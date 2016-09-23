@@ -38,7 +38,7 @@ def inp_scl_mul(a: float, r: List):
 
 
 def scl_mul(a: float, r: List):
-    ret = []
+    ret = r.copy()
     for i in range(len(r)):
         ret[i] *= a
     return ret

@@ -147,7 +147,7 @@ class SuperOkienkoAsi:
         #pen = pg.mkPen(width=1, color=pg.intColor(i, hues=100,minValue=10)))
         for punkt in self.active_case[1][iter]:
             col = QtGui.QColor(QtGui.QColor.colorNames()[(13 * i) % 148])
-            print(col.name())
+            #print(col.name())
             if prev is True:
                 col.setAlpha(60)
             self.left_graph.addItem(

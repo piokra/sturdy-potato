@@ -10,7 +10,7 @@ from pmath.util.vector_util import *
 class ParticleSwarmOptimization(OptimizationMethod):
     def __init__(self, region=None, omega=0.3, phil=0.9, phig=0.1):
         super().__init__(region)
-        self.omega = 0.3
+        self.omega = omega
         self.phil = phil
         self.phig = phig
         self.local_best = []
@@ -29,7 +29,7 @@ class ParticleSwarmOptimization(OptimizationMethod):
         generators = [StdRealUniformGenerator() for i in range(self.fitness_function.input_dim())]
         self.generator = NDimGenerator(generators)
 
-    def method(self, agent):
+    def method(self, agent, i):
         if not self.init:
             self.init_method()
         global_best = self.handler.top_k_agents(1)[0]
@@ -40,23 +40,22 @@ class ParticleSwarmOptimization(OptimizationMethod):
             self.global_best_value = self.handler.get_best_value()
 
         # print(global_best)
-        for i, agent in enumerate(self.agents):
-            l_best = self.get_local_best((self.handler.get_fintess(agent), agent), i)
+        l_best = self.get_local_best((self.handler.get_fintess(agent), agent), i)
 
-            vel = self.velocity(i)
-            inp_scl_mul(self.omega, vel)
-            gdiff = vec_sub(global_best, agent)
-            ldiff = vec_sub(l_best, agent)
-            inp_scl_mul(self.phig, gdiff)
-            inp_scl_mul(self.phil, ldiff)
-            inp_el_wise_mul(gdiff, self.generator.get())
-            inp_el_wise_mul(ldiff, self.generator.get())
-            inp_vec_add(vel, ldiff)
-            inp_vec_add(vel, gdiff)
-            self.velocities[i] = vel
-            inp_vec_add(agent, vel)
+        vel = self.velocity(i)
+        inp_scl_mul(self.omega, vel)
+        gdiff = vec_sub(global_best, agent)
+        ldiff = vec_sub(l_best, agent)
+        inp_scl_mul(self.phig, gdiff)
+        inp_scl_mul(self.phil, ldiff)
+        inp_el_wise_mul(gdiff, self.generator.get())
+        inp_el_wise_mul(ldiff, self.generator.get())
+        inp_vec_add(vel, ldiff)
+        inp_vec_add(vel, gdiff)
+        self.velocities[i] = vel
+        inp_vec_add(agent, vel)
 
-        self.handler.refresh()
+
 
     def get_local_best(self, candiate: Tuple[float, List], n: int):
         while n >= len(self.local_best):
