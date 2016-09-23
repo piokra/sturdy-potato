@@ -1,17 +1,44 @@
 from math import sin, cos, log, sqrt, pi, tan
 
-from pmath.functions.elementary_functions import Polynomial, Erf
+from pmath.functions.elementary_functions import Polynomial, Erf, Exp
 from pmath.rndgen.util import InverseCDFGenerator
 from .generator import Generator
 from .pygen import StdRealUniformGenerator
+
+
+class UniformRealDistribution(Generator):
+    def __init__(self, low: float, high: float, generator=None):
+        if generator is None:
+            generator = StdRealUniformGenerator()
+        self.generator = generator
+        self.high = high
+        self.low = low
+
+    def get(self):
+        return (self.high - self.low) * self.generator.get() + self.low
+
+
+class UniformIntDistribution(Generator):
+    def __init__(self, low: int, high: int, generator=None):
+        if generator is None:
+            generator = StdRealUniformGenerator()
+        self.generator = generator
+        self.high = high
+        self.low = low
+
+    def get(self):
+        return int((self.high - self.low + 1) * self.generator.get() + self.low)
 
 
 class NormalDistribution(InverseCDFGenerator):
     def __init__(self, mean=0, std=1, solver=None, generator=None, low=None):
         self.mean = mean
         self.std = std
+        self.pdf = Polynomial([1 / (2 * self.std * self.std * pi)]) * \
+                   (Exp() @ Polynomial([0, 0, -1 / (2 * self.std * self.std)]) @ Polynomial([-self.mean, 1]))
         self.cdf = Polynomial([0.5]) + Polynomial([0.5]) * \
                                        (Erf() @ Polynomial([-mean / (std * sqrt(2)), 1 / (std * sqrt(2))]))
+        self.pdf.integral_cache[0] = self.cdf
         super().__init__(self.cdf, solver, generator, low)
 
 

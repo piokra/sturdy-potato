@@ -6,6 +6,7 @@ from optimization.pso import ParticleSwarmOptimization
 from pmath.functions.base_function import Variables
 from pmath.functions.elementary_functions import Polynomial, Exp, Sin, Cos
 from pmath.functions.test_functions import parabolaxy_region, parabolaxy
+from pmath.graphs.graphs import RandomGraphGenerator, dfs
 from pmath.rndgen.util import InverseCDFGenerator
 from pmath.util.hcuberegion import HCubeRegion
 from pmath.util.integrator import CallableIntegrator
@@ -14,13 +15,25 @@ from gui.test import test
 from pmath.util.vector_util import random_dir
 
 if __name__ == "__main__":
-    test()
+    #test()
 
-    print(random_dir(3))
-    x, y = Variables().get(2, ["x", "y"])
-    f=(Exp() @ Exp() @ x + Exp() @ y)
-    print(f([1, 1]))
+    #print(random_dir(3))
+    #x, y = Variables().get(2, ["x", "y"])
+    #f=(Exp() @ Exp() @ x + Exp() @ y)
+    #print(f([1, 1]))
+    gg = RandomGraphGenerator(node_count=6, edge_chance=0, continuous=True)
+    graph = gg.get()
+    def paint_it_black(node):
+        node.values["black"] = True
 
+    dfs(graph, func=paint_it_black)
+    for node in graph.nodes:
+        try:
+            print(node.values["black"])
+        except KeyError:
+            print("Not black")
+        print(len(node.edges))
+        print(node.edges)
 def swag():
     pass
 
