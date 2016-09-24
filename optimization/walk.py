@@ -1,11 +1,12 @@
 from optimization.optimization_method import OptimizationMethod
 from pmath.rndgen.advanced import LevyDistribution
+from pmath.rndgen.generator import Generator
 from pmath.rndgen.pygen import StdRealUniformGenerator
 from pmath.util.vector_util import *
 
 
 class RandomWalk(OptimizationMethod):
-    def __init__(self, scale=1.0, walk_generator=StdRealUniformGenerator(), region=None):
+    def __init__(self, scale=1.0, walk_generator:Generator=StdRealUniformGenerator(), region=None):
         super().__init__(region)
         self.walk_generator = walk_generator
         self.scale =scale

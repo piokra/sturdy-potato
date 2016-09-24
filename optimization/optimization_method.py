@@ -64,9 +64,9 @@ class FitnessHandler:
         self.refresh()
 
     def sort(self):
-        self.population.sort(key=self.get_fintess)
+        self.population.sort(key=self.get_fitness)
 
-    def get_fintess(self, agent):
+    def get_fitness(self, agent):
         fit = self.cache[id(agent)]
         try:
             pen = self.penalty_cache[id(agent)]
@@ -94,7 +94,7 @@ class FitnessHandler:
         Returns the best value. (We assume lower is better)
         :return: Best value
         """
-        return self.get_fintess(self.get_best_agent())
+        return self.get_fitness(self.get_best_agent())
 
     def top_k_agents(self, k):
         """
@@ -180,6 +180,8 @@ class OptimizationMethod:
         self.dead_agents = []
         self.new_agents = []
         self.agents_to_replace = []
+
+        self.runtime = 0.0
 
     def set_time_limit(self, seconds: float):
         """
@@ -347,7 +349,8 @@ class OptimizationMethod:
                     saved.append(deepcopy(agents))
                     # return saved
 
-            if perf_counter() - start_time > self.time_limit:
+            self.runtime = perf_counter() - start_time
+            if self.runtime > self.time_limit:
                 saved.append(deepcopy(agents))
                 return saved
 

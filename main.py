@@ -3,6 +3,7 @@
 #self.set_function_and_region(parabolaxy, parabolaxy_region)
 from gui.test import test
 from optimization.genetic import GeneticAlgorithm
+from pmath.functions.elementary_functions import Polynomial
 from pmath.functions.test_functions import parabolaxy_region, parabolaxy
 from pmath.rndgen.util import WeightedSelector
 

@@ -2,14 +2,14 @@ class Generator:
     """ A value generator """
 
     def __init__(self):
-        return NotImplementedError('This is an abstract method')
+        raise NotImplementedError('This is an abstract method')
 
     def get(self):
         """
         Generates next value
         :return: Next Value
         """
-        return NotImplementedError('This is an abstract method')
+        raise NotImplementedError('This is an abstract method')
 
     def range(self, n):
         """

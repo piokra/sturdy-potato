@@ -40,7 +40,7 @@ class ParticleSwarmOptimization(OptimizationMethod):
             self.global_best_value = self.handler.get_best_value()
 
         # print(global_best)
-        l_best = self.get_local_best((self.handler.get_fintess(agent), agent), i)
+        l_best = self.get_local_best((self.handler.get_fitness(agent), agent), i)
 
         vel = self.velocity(i)
         inp_scl_mul(self.omega, vel)

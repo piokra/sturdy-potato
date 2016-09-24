@@ -44,7 +44,7 @@ class NewtonMethod(RootFinder):
             for i in range(func.input_dim()):
                 # todo: this only works in r^1. Fix with partial deriviation
                 try:
-                    start[i] = start[i] - value / dvalue
+                    start[i] -= value / dvalue
                 except (ZeroDivisionError, OverflowError):
                     start = region.get_random_point()
             value = func(start)

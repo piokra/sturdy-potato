@@ -4,31 +4,43 @@ from typing import List
 from pmath.rndgen.advanced import NormalDistribution01
 
 
-def inp_vec_add(l: List, r: List):
+def inp_vec_add(l: List, r: List, *rest):
     _len = min(len(l), len(r))
     for i in range(_len):
         l[i] += r[i]
+        if rest is not None:
+            for m in rest:
+                l[i] += m[i]
 
 
-def inp_vec_sub(l: List, r: List):
+def inp_vec_sub(l: List, r: List, *rest):
     _len = min(len(l), len(r))
     for i in range(_len):
         l[i] -= r[i]
+        if rest is not None:
+            for m in rest:
+                l[i] -= m[i]
 
 
-def vec_add(l: List, r: List):
+def vec_add(l: List, r: List, *rest):
     ret = []
     _len = min(len(l), len(r))
     for i in range(_len):
         ret.append(l[i] + r[i])
+        if rest is not None:
+            for m in rest:
+                ret[i] += m[i]
     return ret
 
 
-def vec_sub(l: List, r: List):
+def vec_sub(l: List, r: List, *rest):
     ret = []
     _len = min(len(l), len(r))
     for i in range(_len):
         ret.append(l[i] - r[i])
+        if rest is not None:
+            for m in rest:
+                ret[i] -= m[i]
     return ret
 
 
@@ -51,16 +63,24 @@ def dot(l: List, r: List):
     return ret
 
 
-def inp_el_wise_mul(l: List, r: List):
+def inp_el_wise_mul(l: List, r: List, *rest):
     _len = min(len(l), len(r))
     for i in range(_len):
         l[i] *= r[i]
+        if rest is not None:
+            for m in rest:
+                l[i] *= m[i]
 
 
-def el_wise_mul(l: List, r: List):
+def el_wise_mul(l: List, r: List, *rest):
     ret = []
-    for x, y in zip(l, r):
-        ret.append(x * y)
+    _len = min(len(l), len(r))
+    for i in range(_len):
+        ret.append(l[i]*r[i])
+        if rest is not None:
+            for m in rest:
+                ret[i] *= m[i]
+
 
 
 def replace(l: List, r: List):

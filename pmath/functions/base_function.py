@@ -27,10 +27,6 @@ class MathFunction:
         """ Outputs number of output dimensions """
         raise NotImplementedError("This method must be overridden")
 
-    def parameter_count(self) -> int:
-        """ Outputs number of parameters """
-        raise NotImplementedError("This method must be overridden")
-
     def __call__(self, arguments: List[float]) -> float:
         """
             Calls the object
@@ -84,23 +80,56 @@ class MathFunction:
     def __str__(self):
         raise NotImplementedError("This method must be overridden")
 
+    def __radd__(self, other):
+        other = pmath.functions.elementary_functions.Polynomial([other])
+        return pmath.functions.base_function.FunctionSum(other, self)
+
     def __add__(self, other):
+        if type(other) is float or type(other) is int:
+            other = pmath.functions.elementary_functions.Polynomial([other])
         return pmath.functions.base_function.FunctionSum(self, other)
 
     def __sub__(self, other):
+        if type(other) is float or type(other) is int:
+            other = pmath.functions.elementary_functions.Polynomial([other])
         return pmath.functions.base_function.FunctionSubtraction(self, other)
 
+    def __rsub__(self, other):
+        other = pmath.functions.elementary_functions.Polynomial([other])
+        return pmath.functions.base_function.FunctionSubtraction(other,self)
+
     def __mul__(self, other):
+        if type(other) is float or type(other) is int:
+            other = pmath.functions.elementary_functions.Polynomial([other])
         return pmath.functions.base_function.FunctionMultiplication(self, other)
 
+    def __rmul__(self, other):
+        other = pmath.functions.elementary_functions.Polynomial([other])
+        return pmath.functions.base_function.FunctionMultiplication(other, self)
+
     def __pow__(self, power, modulo=None):
+        if type(power) is float or type(power) is int:
+            other = pmath.functions.elementary_functions.Polynomial([power])
         return pmath.functions.base_function.FunctionPower(self, power)
 
+    def __rpow__(self, other):
+
+        other = pmath.functions.elementary_functions.Polynomial([other])
+        return pmath.functions.base_function.FunctionPower(other, self)
+
     def __matmul__(self, other):
+        if type(other) is float or type(other) is int:
+            other = pmath.functions.elementary_functions.Polynomial([other])
         return pmath.functions.base_function.FunctionComposiiton(self, other)
 
     def __truediv__(self, other):
+        if type(other) is float or type(other) is int:
+            other = pmath.functions.elementary_functions.Polynomial([other])
         return pmath.functions.base_function.FunctionDivision(self, other)
+
+    def __rtruediv__(self, other):
+        other = pmath.functions.elementary_functions.Polynomial([other])
+        return pmath.functions.base_function.FunctionDivision(other, self)
 
 
 class HOBinaryFunction(MathFunction):
