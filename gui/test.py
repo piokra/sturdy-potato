@@ -95,6 +95,7 @@ class SuperOkienkoAsi:
         play_button.clicked.connect(lambda: self.play(timer))
 
         execute.clicked.connect(lambda: self.execute(text_box))
+        self.other_windows = []
         ## Display the widget as a new window
 
     def go(self):
@@ -216,10 +217,18 @@ class SuperOkienkoAsi:
         scatter_plot.addPoints(items)
 
         def inspect_data(plot, items):
+            print(items)
+            self.other_windows.clear()
             for item in items:
+                widg = QtGui.QWidget()
+                layo = QtGui.QGridLayout()
+                widg.setLayout(layo)
+                table_view = QtGui.QTableView()
+                layo.addWidget(table_view, 0, 0)
+                widg.show()
+                self.other_windows.append(widg)
 
-
-        scatter_plot.sigClicked.connect(lambda x, y: print(x, y, y[0].data()))
+        scatter_plot.sigClicked.connect(inspect_data)
 
 
 
