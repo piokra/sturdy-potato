@@ -1,8 +1,11 @@
+import random
 import uuid
 from typing import Iterable, Tuple
 
 from pmath.rndgen.generator import Generator
 from pmath.rndgen.pygen import StdRealUniformGenerator
+from pmath.util.region import Region
+from pmath.util.vector_util import dist
 
 
 class Edge:
@@ -12,6 +15,13 @@ class Edge:
         if kwargs is None:
             kwargs = dict()
         self.values = kwargs.copy()
+
+    def __getitem__(self, item):
+        return self.values[item]
+
+    def __setitem__(self, key, value):
+        self.values[key] = value
+        return value
 
 
 class Node:
@@ -61,6 +71,13 @@ class Node:
                 return True
         return False
 
+    def __getitem__(self, item):
+        return self.values[item]
+
+    def __setitem__(self, key, value):
+        self.values[key] = value
+        return value
+
 
 def _dfs_helper(node: Node, func, visited: str):
     node.values[visited] = True
@@ -92,6 +109,41 @@ class Graph:
     def delete_value(self, name):
         for node in self.nodes:
             node.delete_value(name)
+
+    def __getitem__(self, item):
+        return self.values[item]
+
+    def __setitem__(self, key, value):
+        self.values[key] = value
+        return value
+
+
+class PositionGenerator(Generator):
+    def __init__(self, region: Region, sample_size=1000, min_distance=1):
+        removed = [False] * sample_size
+        samples = [region.get_random_point() for i in range(sample_size)]
+        self.points = []
+        for i in range(sample_size):
+            if removed[i]:
+                continue
+
+            for j in range(sample_size):
+                if removed[j] or i == j:
+                    continue
+
+                if dist(samples[i], samples[j]) < min_distance:
+                    removed[i] = True
+
+            if not removed[i]:
+                self.points.append(samples[i])
+
+    def get(self):
+        ret = random.choice(self.points)
+        self.points.remove(ret)
+        return ret
+
+    def points_left(self):
+        return len(self.points)
 
 
 class RandomGraphGenerator(Generator):
@@ -131,7 +183,7 @@ class RandomGraphGenerator(Generator):
                 if not node.is_connected(other_node) and node is not other_node:
                     val = self.default_generator.get()
                     if val <= self.edge_chance:
-                        print("Gen edge")
+                        # print("Gen edge")
                         self.gen_edge(node, other_node)
 
         if self.continuous:
