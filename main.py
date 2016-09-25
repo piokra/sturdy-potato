@@ -24,11 +24,11 @@ r = sel.choose(l, lambda x: 1)
 print(r in l)
 
 from optimization.genetic import GeneticAlgorithm
-self.set_function_and_region(branin, branin_region)
-ga = GeneticAlgorithm(region=branin)
-ga.set_fitness_function(branin_region)
+self.set_function_and_region(branin, branin_region, step=0.33)
+ga = GeneticAlgorithm(region=branin_region)
+ga.set_fitness_function(branin)
 ga.set_time_limit(3)
 
 agents = ga.start(save=10)
 
-#self.add_result("GA", agents)
+self.add_result("GA", agents)

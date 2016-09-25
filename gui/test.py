@@ -1,3 +1,5 @@
+import operator
+
 import numpy as np
 import pyqtgraph as pg
 from PyQt4 import QtGui, QtCore
@@ -5,6 +7,43 @@ from PyQt4 import QtGui, QtCore
 from pmath.functions.test_functions import *
 from pmath.graphs.graphs import Graph
 from pmath.util.hcuberegion import HCubeRegion
+
+
+class TabelkaModel(QtCore.QAbstractTableModel):
+    def __init__(self, datain, headerdata, parent=None, *args):
+        """ datain: a list of lists
+            headerdata: a list of strings
+        """
+        super().__init__(parent)
+        self.arraydata = datain
+        self.headerdata = headerdata
+
+    def rowCount(self, parent):
+        return len(self.arraydata)
+
+    def columnCount(self, parent):
+        return len(self.arraydata[0])
+
+    def data(self, index, role):
+        if not index.isValid():
+            return None
+        elif role != QtCore.Qt.DisplayRole:
+            return None
+        return str(self.arraydata[index.row()][index.column()])
+
+    def headerData(self, col, orientation, role):
+        if orientation == QtCore.Qt.Horizontal and role == QtCore.Qt.DisplayRole:
+            return str(self.headerdata[col])
+        return None
+
+    def sort(self, Ncol, order):
+        """Sort table by given column number.
+        """
+        self.emit(QtCore.SIGNAL("layoutAboutToBeChanged()"))
+        self.arraydata = sorted(self.arraydata, key=operator.itemgetter(Ncol))
+        if order == QtCore.Qt.DescendingOrder:
+            self.arraydata.reverse()
+        self.emit(QtCore.SIGNAL("layoutChanged()"))
 
 
 class SuperOkienkoAsi:
@@ -16,6 +55,7 @@ class SuperOkienkoAsi:
         self.w = QtGui.QWidget()
         self.iter = -1
         self.active_case = None
+        self.fitness_function = None
 
         left_side = QtGui.QGroupBox()
         right_side = QtGui.QGroupBox()
@@ -62,13 +102,15 @@ class SuperOkienkoAsi:
         left_layout.addWidget(forward, 5, 2)
 
         self.gradient = pg.GradientWidget()
-        step = 0.1
+        step = 0.01
         x = 0
         while x <= 1.0:
             self.gradient.addTick(x, pg.mkColor(255 * x, 255 * (1 - x), 0))
-            self.gradient.addTick(x + step / 20, pg.mkColor(0, 0, 0))
-            # self.gradient.addTick(x+step/5, pg.mkColor(0,0,0))
-            self.gradient.addTick(x + step / 10, pg.mkColor(255 * x, 255 * (1 - x), 0))
+            if x+step <= 1.0 and x != 0:
+                self.gradient.addTick(x + step / 20, pg.mkColor(0, 0, 0))
+                self.gradient.addTick(x+step/10, pg.mkColor(0,0,0))
+                self.gradient.addTick(x + step / 10, pg.mkColor(255 * x, 255 * (1 - x), 0))
+
             x += step
 
         right_layout.addWidget(text_box, 0, 0, 3, 3)
@@ -95,7 +137,8 @@ class SuperOkienkoAsi:
         play_button.clicked.connect(lambda: self.play(timer))
 
         execute.clicked.connect(lambda: self.execute(text_box))
-        self.other_windows = []
+        #self.other_windows = []
+        self.inspect_window = None
         ## Display the widget as a new window
 
     def go(self):
@@ -136,19 +179,48 @@ class SuperOkienkoAsi:
             print(self.active_case[0], self.iter)
 
     def draw_case(self, iter: int, prev=False):
+        def inspect_data_cont(plot, items):
+            # print(items)
+            #self.other_windows.clear()
+            for item in items:
+                item = item.data()
+                widg = QtGui.QWidget()
+                layo = QtGui.QGridLayout()
+                widg.setLayout(layo)
+                table_view = QtGui.QTableView()
+                inp = [("x", item[0]), ("y", item[1]), ("value", self.fitness_function(item))]
+                table_model = TabelkaModel(datain=inp, headerdata=["key", "value"], parent=widg)
+                table_view.setModel(table_model)
+                layo.addWidget(table_view, 0, 0)
+                widg.show()
+                #self.other_windows.append(widg)
+                self.inspect_window = widg
+
         if iter < 0:
             return
+
         i = 0
         # pen = pg.mkPen(width=1, color=pg.intColor(i, hues=100,minValue=10)))
+        points = []
         for punkt in self.active_case[1][iter]:
             col = QtGui.QColor(QtGui.QColor.colorNames()[(13 * i) % 148])
             # print(col.name())
             if prev is True:
                 col.setAlpha(60)
-            self.left_graph.addItem(
-                pg.PlotDataItem([punkt[0]], [punkt[1]], lines=None, symbol="x", symbolPen=pg.mkPen(width=1,
-                                                                                                   color=col)))
+
+            #item = pg.PlotDataItem([punkt[0]], [punkt[1]], lines=None, symbol="x", symbolPen=pg.mkPen(width=1,
+            #                                                                                          color=col,
+            #                                                                                          data=punkt))
+            edge_item = {'pos': (punkt[0], punkt[1]), 'pen': None,
+                         'symbol': 'x', 'brush': col, 'size': 10, 'data': punkt}
+            #item.sigClicked.connect(lambda *args: print(args))
+            points.append(edge_item)
+
             i += 1
+        scatter_plot = pg.ScatterPlotItem(pxMode=True)
+        scatter_plot.addPoints(points)
+        scatter_plot.sigClicked.connect(inspect_data_cont)
+        self.left_graph.addItem(scatter_plot)
         return
 
     def draw_active_case(self):
@@ -176,7 +248,12 @@ class SuperOkienkoAsi:
             min_brush = min(mnode.values[g_brush] for mnode in graph.nodes)
         except KeyError:
             g_brush = None
-
+        try:
+            g_line = graph.values["line"]
+            max_line = max(mnode.values[g_line] for mnode in graph.nodes)
+            min_line = min(mnode.values[g_line] for mnode in graph.nodes)
+        except KeyError:
+            g_line = None
         try:
             g_pen = graph.values["pen"]
             max_pen = max(mnode.values[g_pen] for mnode in graph.nodes)
@@ -194,9 +271,13 @@ class SuperOkienkoAsi:
             for edge in node.edges:
                 x1, y1 = edge.first["pos"]
                 x2, y2 = edge.second["pos"]
-                self.left_graph.plot([x1, x2], [y1, y2])
-                edge_item = {'pos': ((x1+x2)/2, (y1+y2)/2), 'size': 0.3, 'pen': {'color': pg.intColor(3), 'width': 1},
-                             'brush': pg.intColor(6), 'data': edge}
+                if g_line is None:
+                    line = pg.intColor(0)
+                else:
+                    value = node.values[g_line]
+                    line = pg.intColor(int(100 * (value - min_line) / (min_line + max_line + epsilon)), 100)
+                self.left_graph.plot([x1, x2], [y1, y2], pen=line)
+
                 items.append(edge_item)
 
             if g_brush is None:
@@ -217,20 +298,22 @@ class SuperOkienkoAsi:
         scatter_plot.addPoints(items)
 
         def inspect_data(plot, items):
-            print(items)
-            self.other_windows.clear()
+            # print(items)
+
             for item in items:
+                item = item.data()
                 widg = QtGui.QWidget()
                 layo = QtGui.QGridLayout()
                 widg.setLayout(layo)
                 table_view = QtGui.QTableView()
+                table_model = TabelkaModel(datain=[(key, value) for key, value in item.values.items()],
+                                           headerdata=["key", "value"], parent=widg)
+                table_view.setModel(table_model)
                 layo.addWidget(table_view, 0, 0)
                 widg.show()
-                self.other_windows.append(widg)
+                self.inspect_window = widg
 
         scatter_plot.sigClicked.connect(inspect_data)
-
-
 
         self.left_graph.addItem(scatter_plot)
         self.left_graph.autoRange()
@@ -260,7 +343,7 @@ class SuperOkienkoAsi:
         print(np_array)
         img = pg.ImageItem()
 
-        img.setLookupTable(self.gradient.getLookupTable(100))
+        img.setLookupTable(self.gradient.getLookupTable(300))
         img.setImage(np_array)
 
         # img.setLevels([[0, 4], [0, 255], [0, 255]])
@@ -270,6 +353,7 @@ class SuperOkienkoAsi:
 
         self.left_graph.getPlotItem().clear()
         self.left_graph.addItem(img)
+        self.fitness_function = func
         self.img = img
 
     def play(self, timer: QtCore.QTimer):
