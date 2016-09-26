@@ -1,6 +1,7 @@
 import random
 import uuid
 from typing import Iterable, Tuple
+from typing import List
 
 from pmath.rndgen.generator import Generator
 from pmath.rndgen.pygen import StdRealUniformGenerator
@@ -101,7 +102,7 @@ def dfs(graph: 'Graph', node: 'Node' = None, func=None):
 
 class Graph:
     def __init__(self, **kwargs):
-        self.nodes = []
+        self.nodes = [] # type: List[Node]
         if kwargs is None:
             kwargs = dict()
         self.values = kwargs.copy()
