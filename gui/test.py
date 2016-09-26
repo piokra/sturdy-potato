@@ -68,8 +68,11 @@ class SuperOkienkoAsi:
         forward = QtGui.QPushButton('|>')
 
         text_box = QtGui.QTextEdit()
+        self.text_box = text_box
         load = QtGui.QPushButton('load')
         save = QtGui.QPushButton('save')
+        load.clicked.connect(self.load_script)
+        save.clicked.connect(self.save_script)
         execute = QtGui.QPushButton('EXECUTE :(')
 
         text_font = QtGui.QFont()
@@ -364,6 +367,17 @@ class SuperOkienkoAsi:
             timer.start(1000)
         else:
             timer.stop()
+
+    def load_script(self):
+        filename = QtGui.QFileDialog.getOpenFileName(parent=self.w, caption="Load Script", filter="Python scripts (*.py)")
+        with open(filename, "r") as f:
+            self.text_box.setText(f.read())
+
+    def save_script(self):
+        filename = QtGui.QFileDialog.getSaveFileName(parent=self.w, caption="Save Script", filter="Python scripts (*.py)")
+        with open(filename, "w") as f:
+            f.write(self.text_box.toPlainText())
+
 
 
 def test():

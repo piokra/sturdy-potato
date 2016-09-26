@@ -122,6 +122,10 @@ class MathFunction:
             other = pmath.functions.elementary_functions.Polynomial([other])
         return pmath.functions.base_function.FunctionComposiiton(self, other)
 
+    def __rmatmul__(self, other):
+        other = pmath.functions.elementary_functions.Polynomial([other])
+        return pmath.functions.base_function.FunctionComposiiton(other, self)
+
     def __truediv__(self, other):
         if type(other) is float or type(other) is int:
             other = pmath.functions.elementary_functions.Polynomial([other])

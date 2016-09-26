@@ -6,7 +6,7 @@ from pmath.util.vector_util import *
 
 
 class GeneticAlgorithm(OptimizationMethod):
-    def __init__(self, p_cross1=0.6, p_cross2=0.3, p_mutation=0.02, elitism=0.1, population_size=20, region=None):
+    def __init__(self, p_cross1=0.6, p_cross2=0.3, p_mutation=0.02, elitism=0.1, mu=20, lambdaf=40, region=None):
         super().__init__(region)
 
         self.p_cross1 = p_cross1
@@ -17,7 +17,7 @@ class GeneticAlgorithm(OptimizationMethod):
         self.epsilon = 10e-12
         self.smallwalk = RandomWalk(scale=0.1)
         self.bigwalk = LevyFlight()
-        self.population_size = population_size
+        # self.population_size = mu
         # self.init_population(gen_count=population_size)
 
         self.mutation_generator = StdRealUniformGenerator()
@@ -25,10 +25,26 @@ class GeneticAlgorithm(OptimizationMethod):
         self.mutators = dict()
         self.mutator = RandomWalk(walk_generator=NormalDistribution01())
 
+        self.parents = self.unique_parents
+        self.candidates = self.mu_and_lambda
+        self.mu = mu
+        self.lambdaf = lambdaf
+
+    def unique_parents(self):
+        return self.selector.population(self.agents, 2, lambda x: 1.1 - self.handler.get_fitness(x))
+
+    def nonunique_parents(self):
+        return [self.selector.choose(self.agents, lambda x: 1.1 - self.handler.get_fitness(x)) for i in range(2)]
+
+    def mu_plus_lambda(self, new_pop):
+        return self.agents.copy() + new_pop
+
+    def mu_and_lambda(self, new_pop):
+        return new_pop
 
     def set_fitness_function(self, fitness_function):
         super().set_fitness_function(fitness_function)
-        self.init_population(gen_count=self.population_size)
+        self.init_population(gen_count=self.mu)
 
     def cross1(self, agent1, agent2):
         fit1 = self.handler.get_fitness(agent1)
@@ -37,7 +53,7 @@ class GeneticAlgorithm(OptimizationMethod):
         agent_temp1 = scl_mul(1 - c1, agent1)
         agent_temp2 = scl_mul(c1, agent2)
         agent = vec_add(agent_temp1, agent_temp2)
-        self.mutators[id(agent)] = (1-c1)*self.mutators[id(agent1)]+c1*self.mutators[id(agent2)]
+        self.mutators[id(agent)] = (1 - c1) * self.mutators[id(agent1)] + c1 * self.mutators[id(agent2)]
         return agent
 
     def cross2(self, agent1, agent2):
@@ -65,8 +81,6 @@ class GeneticAlgorithm(OptimizationMethod):
             del old_dict
         self.mutators = new_dict
 
-
-
     def mutation(self, agent1):
         # agent1 = agent1.copy()
         self.bigwalk.method(agent1, 0)
@@ -84,8 +98,8 @@ class GeneticAlgorithm(OptimizationMethod):
         p = self.p_cross1 / l
 
         new_population = []
-        for i in range(2 * self.population_size):
-            parents = self.selector.population(self.agents, 2, lambda x: 1.1 - self.handler.get_fitness(x))
+        for i in range(self.lambdaf):
+            parents = self.parents()
 
             x = self.mutation_generator.get()
             if x < p:
@@ -94,10 +108,25 @@ class GeneticAlgorithm(OptimizationMethod):
                 new_population.append(self.cross2(parents[0], parents[1]))
 
         self.handler.set_population(new_population)
-
-        new_population = self.selector.population(new_population, self.population_size,
-                                                  lambda x: 1.1 - self.handler.get_fitness(x))
+        new_population = self.candidates(new_population)
+        new_population = self.selector.population(new_population,
+                                                  self.mu - int(len(self.agents) * self.elitism),
+                                                  lambda xx: 1.1 - self.handler.get_fitness(xx))
+        self.agents.sort(key=self.fitness_function)
+        for i in range(int(len(self.agents) * self.elitism)):
+            new_population.append(self.agents[i])
         self.agents = new_population
         self.handler.set_population(new_population)
 
         #        self.handler.refresh()
+
+    def method(self, agent, i):
+        pass
+
+
+class ESMuPlusLambda(GeneticAlgorithm):
+    def __init__(self, p_cross1=0.6, p_cross2=0.3, p_mutation=0.02, elitism=0.1, mu=20, lambdaf=40, region=None):
+        super().__init__(p_cross1=p_cross1, p_mutation=p_mutation, elitism=elitism, mu=mu, lambdaf=lambdaf,
+                         region=region)
+        self.parents = self.nonunique_parents
+        self.candidates = self.mu_plus_lambda

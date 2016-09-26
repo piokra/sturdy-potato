@@ -8,8 +8,7 @@ from pmath.functions.test_functions import parabolaxy_region, parabolaxy, branin
 from pmath.graphs.graphs import PositionGenerator
 from pmath.rndgen.util import WeightedSelector
 
-x, y = [0,1]
-print(x,y)
+
 
 pg = PositionGenerator(branin_region)
 print(pg.points_left())

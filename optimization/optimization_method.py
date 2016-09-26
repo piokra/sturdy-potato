@@ -173,7 +173,7 @@ class OptimizationMethod:
         self.pool = None  # Pool(cpu_count())
 
         self.iteration = 0
-        self.handler = NormalizedFitnessHandler()  # type: FitnessHandler
+        self.handler = DefaultFitnessHandler()  # type: FitnessHandler
 
         self.stagnant_single_turns = 0
         self.stagnant_sum_turns = 0
