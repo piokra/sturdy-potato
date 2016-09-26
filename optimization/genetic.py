@@ -45,6 +45,7 @@ class GeneticAlgorithm(OptimizationMethod):
     def set_fitness_function(self, fitness_function):
         super().set_fitness_function(fitness_function)
         self.init_population(gen_count=self.mu)
+        print(self.agents)
 
     def cross1(self, agent1, agent2):
         fit1 = self.handler.get_fitness(agent1)
