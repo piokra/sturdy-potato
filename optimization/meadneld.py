@@ -2,7 +2,10 @@ from optimization.optimization_method import OptimizationMethod
 from pmath.util.vector_util import *
 
 
-def unshift_simplex(shifted_simplex, diff):
+def unshift_simplex(shifted_simplex, agent):
+    center = vec_add(*(vertex for vertex in shifted_simplex))
+    center = scl_mul(1 / len(shifted_simplex), center)
+    diff = vec_sub(agent, center)
     simplex = [vec_sub(vertex, diff) for vertex in shifted_simplex]
 
     return simplex
@@ -31,7 +34,7 @@ class MeadNelderMethod(OptimizationMethod):
             simplex = []
             for j in range(dim):
                 vertex = [0]*dim
-                vertex[j] = 1
+                vertex[j] = self.size
                 simplex.append(vertex)
             simplex.append([0]*dim)
             self.simplexes.append(simplex)
@@ -52,8 +55,10 @@ class MeadNelderMethod(OptimizationMethod):
                 <= self.fitness_function(shifted_simplex[-2]):
             #print("reflecting 1")
             shifted_simplex[-1] = xr_shifted
-            self.simplexes[i] = unshift_simplex(shifted_simplex, diff)
-            return self.move_agent(shifted_simplex, i)
+            self.move_agent(shifted_simplex, i)
+
+            self.simplexes[i] = unshift_simplex(shifted_simplex, self.agents[i])
+            return
 
         # expansion
         if self.fitness_function(xr_shifted) < self.fitness_function(shifted_simplex[0]):

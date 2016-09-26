@@ -84,9 +84,8 @@ def el_wise_mul(l: List, r: List, *rest):
 
 
 def replace(l: List, r: List):
-    l.clear()
-    for el in r:
-        l.append(r)
+    for i in range(len(l)):
+        l[i] = r[i]
 
 
 def lenght_squred(l: List):

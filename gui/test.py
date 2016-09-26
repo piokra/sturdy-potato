@@ -4,6 +4,14 @@ import numpy as np
 import pyqtgraph as pg
 from PyQt4 import QtGui, QtCore
 
+from optimization.genetic import *  # pycharm plis
+from optimization.meadneld import *  # pycharm plis
+from optimization.hybrid import *  # pycharm plis
+from optimization.pso import *  # pycharm plis
+from optimization.walk import *  # pycharm plis
+from optimization.css import *  # pycharm plis
+
+from pmath.functions.elementary_functions import *  # pycharm plis
 from pmath.functions.test_functions import *
 from pmath.graphs.graphs import Graph
 from pmath.util.hcuberegion import HCubeRegion
@@ -73,7 +81,7 @@ class SuperOkienkoAsi:
         save = QtGui.QPushButton('save')
         load.clicked.connect(self.load_script)
         save.clicked.connect(self.save_script)
-        execute = QtGui.QPushButton('EXECUTE :(')
+        execute = QtGui.QPushButton('execute')
 
         text_font = QtGui.QFont()
         text_font.setFamily("Courier")
@@ -109,9 +117,9 @@ class SuperOkienkoAsi:
         x = 0
         while x <= 1.0:
             self.gradient.addTick(x, pg.mkColor(255 * x, 255 * (1 - x), 0))
-            if x+step <= 1.0 and x != 0:
+            if x + step <= 1.0 and x != 0:
                 self.gradient.addTick(x + step / 20, pg.mkColor(0, 0, 0))
-                self.gradient.addTick(x+step/10, pg.mkColor(0,0,0))
+                self.gradient.addTick(x + step / 10, pg.mkColor(0, 0, 0))
                 self.gradient.addTick(x + step / 10, pg.mkColor(255 * x, 255 * (1 - x), 0))
 
             x += step
@@ -140,7 +148,7 @@ class SuperOkienkoAsi:
         play_button.clicked.connect(lambda: self.play(timer))
 
         execute.clicked.connect(lambda: self.execute(text_box))
-        #self.other_windows = []
+        # self.other_windows = []
         self.inspect_window = None
         ## Display the widget as a new window
 
@@ -184,7 +192,7 @@ class SuperOkienkoAsi:
     def draw_case(self, iter: int, prev=False):
         def inspect_data_cont(plot, items):
             # print(items)
-            #self.other_windows.clear()
+            # self.other_windows.clear()
             for item in items:
                 item = item.data()
                 widg = QtGui.QWidget()
@@ -196,7 +204,7 @@ class SuperOkienkoAsi:
                 table_view.setModel(table_model)
                 layo.addWidget(table_view, 0, 0)
                 widg.show()
-                #self.other_windows.append(widg)
+                # self.other_windows.append(widg)
                 self.inspect_window = widg
 
         if iter < 0:
@@ -211,12 +219,12 @@ class SuperOkienkoAsi:
             if prev is True:
                 col.setAlpha(60)
 
-            #item = pg.PlotDataItem([punkt[0]], [punkt[1]], lines=None, symbol="x", symbolPen=pg.mkPen(width=1,
+            # item = pg.PlotDataItem([punkt[0]], [punkt[1]], lines=None, symbol="x", symbolPen=pg.mkPen(width=1,
             #                                                                                          color=col,
             #                                                                                          data=punkt))
             edge_item = {'pos': (punkt[0], punkt[1]), 'pen': None,
                          'symbol': 'x', 'brush': col, 'size': 10, 'data': punkt}
-            #item.sigClicked.connect(lambda *args: print(args))
+            # item.sigClicked.connect(lambda *args: print(args))
             points.append(edge_item)
 
             i += 1
@@ -369,15 +377,16 @@ class SuperOkienkoAsi:
             timer.stop()
 
     def load_script(self):
-        filename = QtGui.QFileDialog.getOpenFileName(parent=self.w, caption="Load Script", filter="Python scripts (*.py)")
+        filename = QtGui.QFileDialog.getOpenFileName(parent=self.w, caption="Load Script",
+                                                     filter="Python scripts (*.py)")
         with open(filename, "r") as f:
             self.text_box.setText(f.read())
 
     def save_script(self):
-        filename = QtGui.QFileDialog.getSaveFileName(parent=self.w, caption="Save Script", filter="Python scripts (*.py)")
+        filename = QtGui.QFileDialog.getSaveFileName(parent=self.w, caption="Save Script",
+                                                     filter="Python scripts (*.py)")
         with open(filename, "w") as f:
             f.write(self.text_box.toPlainText())
-
 
 
 def test():
