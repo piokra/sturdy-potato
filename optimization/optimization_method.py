@@ -327,26 +327,31 @@ class OptimizationMethod:
                 saved.append(agents)
                 return saved
 
-            if self.low_value_limit > self.handler.get_best_value():
-                saved.append(agents)
-                return saved
+            if self.handler is not None:
+                if self.low_value_limit > self.handler.get_best_value():
+                    saved.append(agents)
+                    return saved
 
-            if self.high_value_limit < self.handler.get_best_value():
-                saved.append(agents)
-                return saved
 
-            if self.handler.highest_abschange_vw() < self.highest_change_limit_vw:
-                self.stagnant_single_turns += 1
-            else:
-                self.stagnant_single_turns = 0
+                if self.high_value_limit < self.handler.get_best_value():
+                    saved.append(agents)
+                    return saved
 
-            if self.handler.total_abschange_vw() < self.highest_total_change_limit_vw:
-                self.stagnant_sum_turns += 1
-            else:
-                self.stagnant_sum_turns = 0
+                if self.handler.highest_abschange_vw() < self.highest_change_limit_vw:
+                    self.stagnant_single_turns += 1
+                else:
+                    self.stagnant_single_turns = 0
+
+                if self.handler.total_abschange_vw() < self.highest_total_change_limit_vw:
+                    self.stagnant_sum_turns += 1
+                else:
+                    self.stagnant_sum_turns = 0
             if save is not None:
                 if self.iteration % save == 0:
-                    saved.append(deepcopy(agents))
+                    if type(agents) is list:
+                        saved.append(deepcopy(agents))
+                    else:
+                        saved.append([agent.copy() for agent in agents])
                     # return saved
 
             self.runtime = perf_counter() - start_time

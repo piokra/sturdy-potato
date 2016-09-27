@@ -39,7 +39,7 @@ class Node:
         self.edges.append(new_edge)
         if symmetrical:
             sym_edge = Edge(second, self, symmetrical)
-            sym_edge.values = self.values
+            sym_edge.values = new_edge.values
             second.edges.append(sym_edge)
         return new_edge
 
@@ -117,6 +117,21 @@ class Graph:
     def __setitem__(self, key, value):
         self.values[key] = value
         return value
+
+    def copy(self):
+        new_graph = Graph()
+        new_graph.values = self.values.copy()
+        new_graph.nodes = [Node() for i in range(len(self.nodes))]
+        for i, node in enumerate(new_graph.nodes):
+            old_node = self.nodes[i]
+            node.values = old_node.values.copy()
+            for edge in old_node.edges:
+                first = node
+                second = self.nodes.index(edge.second)
+                new_edge = Edge(first, second)
+                new_edge.values = edge.values.copy()
+                node.edges.append(new_edge)
+        return new_graph
 
 
 class PositionGenerator(Generator):

@@ -9,11 +9,16 @@ from optimization.meadneld import *  # pycharm plis
 from optimization.hybrid import *  # pycharm plis
 from optimization.pso import *  # pycharm plis
 from optimization.walk import *  # pycharm plis
-from optimization.css import *  # pycharm plis
-
+from optimization.css import *  # pycharm pliszz
+from optimization.ants import * # pycharm pliss
+from optimization.cuckoo import * # pycharm pliss
+from optimization.gso import * # pycharm pliss
 from pmath.functions.elementary_functions import *  # pycharm plis
+from pmath.rndgen.advanced import * # pycharm plis
+from pmath.rndgen.pygen import * # pycharm plis
+
 from pmath.functions.test_functions import *
-from pmath.graphs.graphs import Graph
+from pmath.graphs.graphs import Graph, RandomGraphGenerator, PositionGenerator # pycharm plis
 from pmath.util.hcuberegion import HCubeRegion
 
 
@@ -238,8 +243,8 @@ class SuperOkienkoAsi:
         self.left_graph.getPlotItem().clear()
         if self.img is not None:
             self.left_graph.addItem(self.img)
-
-        if type(self.active_case[1][0]) is Graph:
+        #print(type(self.active_case[1][0]))
+        if type(self.active_case[1][0][0]) is Graph:
             self.plot_active_graph()
         else:
             self.draw_case(self.iter - 1, prev=True)
@@ -249,7 +254,7 @@ class SuperOkienkoAsi:
     def plot_active_graph(self):
 
         self.left_graph.getPlotItem().clear()  # We assume self.cases[1][i] holds type: Graph
-        graph = self.active_case[1][self.iter]  # type: Graph
+        graph = self.active_case[1][self.iter][0]  # type: Graph
         scatter_plot = pg.ScatterPlotItem(pxMode=False)
         items = []
         epsilon = 10e-3
@@ -261,8 +266,8 @@ class SuperOkienkoAsi:
             g_brush = None
         try:
             g_line = graph.values["line"]
-            max_line = max(mnode.values[g_line] for mnode in graph.nodes)
-            min_line = min(mnode.values[g_line] for mnode in graph.nodes)
+            max_line = 12 #max(mnode.values[g_line] for mnode in graph.nodes)
+            min_line = 0#min(mnode.values[g_line] for mnode in graph.nodes)
         except KeyError:
             g_line = None
         try:
@@ -282,12 +287,17 @@ class SuperOkienkoAsi:
             for edge in node.edges:
                 x1, y1 = edge.first["pos"]
                 x2, y2 = edge.second["pos"]
+                edge_item = {'pos': ((x1 + x2) / 2, (y1 + y2) / 2), "pen": pg.intColor(6),
+                             'symbol': 'o', 'brush': pg.intColor(3), 'size': 0.3, 'data': edge}
                 if g_line is None:
                     line = pg.intColor(0)
+                    normalized = 1/4
                 else:
-                    value = node.values[g_line]
-                    line = pg.intColor(int(100 * (value - min_line) / (min_line + max_line + epsilon)), 100)
-                self.left_graph.plot([x1, x2], [y1, y2], pen=line)
+                    value = edge.values[g_line]
+                    normalized = (value - min_line) / (min_line + max_line + epsilon)
+                    #print(normalized)
+                    line = pg.intColor(int(100 * normalized), 100)
+                self.left_graph.plot([x1, x2], [y1, y2], pen={"color": line, "width": 8*(normalized**2)})
 
                 items.append(edge_item)
 

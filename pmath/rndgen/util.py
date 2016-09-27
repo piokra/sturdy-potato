@@ -46,7 +46,7 @@ class WeightedSelector:
         # print("sum:", sum)
         for el in weighted:
             #print(el[0])
-            if el[0] > rand:
+            if el[0] >= rand:
                 return el[1]
 
 
