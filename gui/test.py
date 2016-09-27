@@ -204,7 +204,10 @@ class SuperOkienkoAsi:
                 layo = QtGui.QGridLayout()
                 widg.setLayout(layo)
                 table_view = QtGui.QTableView()
-                inp = [("x", item[0]), ("y", item[1]), ("value", self.fitness_function(item))]
+                if self.fitness_function is not None:
+                    inp = [("x", item[0]), ("y", item[1]), ("value", self.fitness_function(item))]
+                else:
+                    inp = [("x", item[0]), ("y", item[1])]
                 table_model = TabelkaModel(datain=inp, headerdata=["key", "value"], parent=widg)
                 table_view.setModel(table_model)
                 layo.addWidget(table_view, 0, 0)
